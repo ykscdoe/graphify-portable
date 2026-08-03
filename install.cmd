@@ -1,14 +1,14 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableExtensions EnableDelayedExpansion
 
-:: ============================================================
-:: graphify 便携安装脚本 (Windows CMD)
-:: 用法: 双击运行 或 在命令行: install.cmd [目标目录]
-:: ============================================================
+rem ============================================================
+rem graphify 便携安装脚本 (Windows CMD)
+rem 用法: 双击运行 或 在命令行: install.cmd [目标目录]
+rem ============================================================
 
 set "SCRIPT_DIR=%~dp0"
 
-:: 目标安装目录 (默认 C:\graphify-portable)
+rem 目标安装目录 (默认 C:\graphify-portable)
 if "%~1"=="" (
     set "INSTALL_DIR=C:\graphify-portable"
 ) else (
@@ -23,7 +23,7 @@ echo.
 echo 安装目录: %INSTALL_DIR%
 echo.
 
-:: 检测 Python
+rem 检测 Python
 set "PYTHON="
 for /f "delims=" %%i in ('where python 2^>nul') do (
     if "!PYTHON!"=="" set "PYTHON=%%i"
@@ -42,7 +42,7 @@ if "%PYTHON%"=="" (
 echo Python: %PYTHON%
 "%PYTHON%" --version
 
-:: 检查 Python 版本 >= 3.10
+rem 检查 Python 版本 >= 3.10
 for /f "tokens=2" %%v in ('"%PYTHON%" --version 2^>^&1') do set "PYVER=%%v"
 echo 检测到 Python %PYVER%
 for /f "tokens=1,2 delims=." %%a in ("%PYVER%") do (
@@ -60,10 +60,10 @@ if %MAJOR% EQU 3 if %MINOR% LSS 10 (
     exit /b 1
 )
 
-:: 创建目标目录
+rem 创建目标目录
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 
-:: 复制 vendor 包
+rem 复制 vendor 包
 echo.
 echo [1/2] 复制依赖包到 %INSTALL_DIR%...
 xcopy /E /I /Y "%SCRIPT_DIR%vendor" "%INSTALL_DIR%\vendor" >nul
@@ -74,11 +74,11 @@ if errorlevel 1 (
 )
 echo   完成
 
-:: 复制启动脚本
+rem 复制启动脚本
 echo [2/2] 复制启动脚本...
 copy /Y "%SCRIPT_DIR%graphify.cmd" "%INSTALL_DIR%\graphify.cmd" >nul
 
-:: 检查是否需要添加到 PATH
+rem 检查是否需要添加到 PATH
 echo.
 echo 是否将 graphify 添加到系统 PATH？(Y/N)
 echo 选 Y: 可在任意目录运行 "graphify"
