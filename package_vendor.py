@@ -8,7 +8,6 @@ import os
 import sys
 import site
 import shutil
-import subprocess
 from pathlib import Path
 
 def get_site_packages():
@@ -53,6 +52,19 @@ def copy_package(src, dst, ignore_pyc=True, ignore_dirs=None):
     print(f"  {src.name}/ -> {dst.name}/ ({total/1024/1024:.1f} MB)")
     return True
 
+def copy_matching_dirs(site_packages, vendor_dir, patterns):
+    """复制 site-packages 下符合规则的伴随目录，如 numpy.libs。"""
+    copied = []
+    for entry in sorted(site_packages.iterdir()):
+        if not entry.is_dir():
+            continue
+        if entry.name.endswith(('.dist-info', '.egg-info')):
+            continue
+        if any(entry.match(pattern) for pattern in patterns):
+            if copy_package(entry, vendor_dir / entry.name):
+                copied.append(entry.name)
+    return copied
+
 def main():
     script_dir = Path(__file__).parent.resolve()
     vendor_dir = script_dir / "vendor"
@@ -84,8 +96,16 @@ def main():
     for pkg in native_pkgs:
         copy_package(sp / pkg, vendor_dir / pkg)
     
-    # === 4. tree-sitter 语言包 ===
-    print("\n[4/5] 复制 tree-sitter 语言包...")
+    # === 4. 复制原生模块伴随 DLL 目录 ===
+    print("\n[4/6] 复制原生模块伴随目录...")
+    copied_extra = copy_matching_dirs(sp, vendor_dir, ["*.libs"])
+    if copied_extra:
+        print(f"  已复制: {', '.join(copied_extra)}")
+    else:
+        print("  [警告] 未发现 *.libs 目录")
+
+    # === 5. tree-sitter 语言包 ===
+    print("\n[5/6] 复制 tree-sitter 语言包...")
     ts_dirs = sorted([
         d for d in sp.iterdir()
         if d.is_dir() and d.name.startswith("tree_sitter_")
@@ -94,8 +114,8 @@ def main():
     for ts_dir in ts_dirs:
         copy_package(ts_dir, vendor_dir / ts_dir.name)
     
-    # === 5. 验证 ===
-    print("\n[5/5] 验证打包...")
+    # === 6. 验证 ===
+    print("\n[6/6] 验证打包...")
     
     # 验证 graphify 可导入
     sys.path.insert(0, str(vendor_dir))
