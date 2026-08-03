@@ -54,6 +54,11 @@ if errorlevel 1 (
     echo Failed to copy graphify.cmd.
     exit /b 1
 )
+copy /Y "%SCRIPT_DIR%graphify.bat" "%INSTALL_DIR%\graphify.bat" >nul
+if errorlevel 1 (
+    echo Failed to copy graphify.bat.
+    exit /b 1
+)
 
 echo.
 echo Add to PATH? [Y/N]
@@ -65,4 +70,4 @@ if /i "%ADD_PATH%"=="Y" (
 
 echo.
 echo Install complete.
-echo Run: %INSTALL_DIR%\graphify.cmd --help
+echo Run: graphify --help
